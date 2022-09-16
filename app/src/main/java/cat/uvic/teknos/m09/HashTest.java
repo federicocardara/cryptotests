@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-public class App {
+public class HashTest {
     public String getGreeting() {
         return "Hello World!";
     }

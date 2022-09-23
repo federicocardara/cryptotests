@@ -2,20 +2,22 @@ package cat.uvic.teknos.m09;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 public class SymmetricEncryptionTest {
-    public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, InvalidKeySpecException {
         var plaintText = "teknos".repeat(15);
         System.out.println("Plain text: " + plaintText);
 
-        var keyGenerator = KeyGenerator.getInstance("AES");
+        /*var keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(128);
-        var secretKey = keyGenerator.generateKey();
+        var secretKey = keyGenerator.generateKey();*/
+
+        var secretKey = getPasswordBasedKey("AES", 256, "federico".toCharArray());
 
         var cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 
@@ -39,5 +41,14 @@ public class SymmetricEncryptionTest {
         var decryptedText = new String(decryptedTextBytes);
 
         System.out.println("Decrypted text: " + decryptedText);
+    }
+
+    private static Key getPasswordBasedKey(String cipher, int keySize, char[] password) throws NoSuchAlgorithmException,  InvalidKeySpecException {
+        byte[] salt = new byte[100];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(salt);
+        PBEKeySpec pbeKeySpec = new PBEKeySpec(password, salt, 1000, keySize);
+        SecretKey pbeKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(pbeKeySpec);
+        return new SecretKeySpec(pbeKey.getEncoded(), cipher);
     }
 }
